@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Pocket Trade AI</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="auth-screen">
+    <div class="auth-box">
+      <div class="login-logo">POCKET <span>TRADE AI</span></div>
+      <div class="login-sub" id="auth-sub">Sign in to your dashboard</div>
+      <label for="auth-email">Email</label>
+      <input type="email" id="auth-email" placeholder="you@example.com">
+      <label for="auth-password">Password</label>
+      <input type="password" id="auth-password" placeholder="••••••••">
+      <button id="auth-submit-btn">LOG IN</button>
+      <div id="auth-loading" style="display: none; text-align: center; color: #16A765; font-weight: bold; margin-top: 15px;">Authenticating... Please wait.</div>
+      <div class="auth-toggle"><span id="auth-toggle-link">Don't have an account? Sign Up</span></div>
+    </div>
+  </div>
+
+  <div id="dashboard">
+    <div class="top-navbar">
+      <div class="nav-left">
+        <div class="avatar-circle" onclick="toggleSideMenu()">👤</div>
+        <div class="gift-icon">🎁</div>
+      </div>
+      <div class="nav-center" id="account-selector-btn">
+        <div class="account-selector"><span id="nav-account-name">QT Real</span> <span style="font-size: 10px;">▼</span></div>
+        <div class="nav-balance" id="nav-balance">$110.00</div>
+      </div>
+      <div class="nav-right">
+        <button class="wallet-icon-btn" onclick="openPage('finance')">💳</button>
+      </div>
+    </div>
+
+    <div id="account-dropdown" class="account-dropdown">
+      <div class="dropdown-item" onclick="switchAccount('real')">
+        <div><strong style="color: #fff;">QT Real Account</strong><div style="font-size: 11px; color: #9AA8BE;">Real Money</div></div>
+        <span style="color: #16A765; font-weight: bold;">$110.00</span>
+      </div>
+      <div class="dropdown-item" onclick="switchAccount('demo')">
+        <div><strong style="color: #fff;">QT Demo Account</strong><div style="font-size: 11px; color: #9AA8BE;">Simulated</div></div>
+        <span style="color: #2777E8; font-weight: bold;">$50,000.00</span>
+      </div>
+    </div>
+
+    <!-- TRADING PAGE -->
+    <div id="page-trading" class="page active-page">
+      <div class="asset-bar">
+        <select id="pair-select">
+          <option>AED/CNY OTC</option>
+          <option>EUR/CHF OTC</option>
+          <option>EUR/USD OTC</option>
+          <option>GBP/USD OTC</option>
+        </select>
+        <select id="timeframe-select" style="max-width:120px;">
+          <option value="3">3 sec</option>
+          <option value="5">5 sec</option>
+          <option value="15">15 sec</option>
+          <option value="60">1 min</option>
+          <option value="300">5 min</option>
+          <option value="3600">1 hour</option>
+          <option value="86400">24 hours</option>
+        </select>
+      </div>
+
+      <div class="chart-wrap">
+        <canvas id="chart"></canvas>
+        <div class="chart-price"><span id="live-pair">AED/CNY OTC</span><strong id="live-price">1.72500</strong></div>
+        <div class="expiry-badge">Active: <strong id="active-count">0</strong></div>
+      </div>
+
+      <div class="trade-panel">
+        <div class="trade-row">
+          <div class="trade-field"><label>Expiry</label><input type="text" id="expiry-display" value="3 sec" readonly></div>
+          <div class="trade-field"><label>Amount ($5 - $99)</label><input type="number" id="amount-input" value="10" min="5" max="99" step="1"></div>
+        </div>
+        <div id="profit-message" style="text-align: center; color: #16A765; font-size: 13px; font-weight: bold; margin-bottom: 14px;">Guaranteed Profit: +$25.00 per trade</div>
+        <div class="action-row">
+          <button class="btn-buy" id="buy-btn">↗ BUY</button>
+          <button class="btn-sell" id="sell-btn">↘ SELL</button>
+        </div>
+      </div>
+
+      <div class="history-panel">
+        <h3 id="history-title">Real Account History</h3>
+        <div id="history-list"><div class="history-empty">No trades yet. Click BUY or SELL to start.</div></div>
+      </div>
+    </div>
+
+    <!-- FINANCE PAGE -->
+    <div id="page-finance" class="page">
+      <div class="page-content">
+        <h2>Finance Dashboard</h2>
+        <div class="finance-card">
+          <h3>Real Account Balance</h3>
+          <div class="big-balance" id="finance-real-balance">$110.00</div>
+          <p>Minimum withdrawal: $5,000.00 USD</p>
+        </div>
+
+        <div class="finance-card">
+          <h3>Deposit Funds</h3>
+          <p style="font-size: 12px; color: #9AA8BE; margin-bottom: 10px;">Minimum deposit: $10.00</p>
+          <input type="number" id="deposit-amount-input" placeholder="Enter amount (e.g. 50)" min="10" style="width: 100%; padding: 12px; background: #101525; border: 1px solid #303C55; color: white; border-radius: 8px; margin-bottom: 10px;">
+          <button class="finance-btn" onclick="processDeposit()">Submit Deposit</button>
+        </div>
+
+        <div class="finance-card">
+          <h3>Withdraw Funds</h3>
+          <p id="withdraw-status-msg" style="font-size: 12px; color: #9AA8BE; margin-bottom: 10px;">You need $5,000.00 to unlock withdrawal.</p>
+          <input type="number" id="withdraw-amount-input" placeholder="Enter amount (Min $5000)" disabled style="width: 100%; padding: 12px; background: #101525; border: 1px solid #303C55; color: white; border-radius: 8px; margin-bottom: 10px;">
+          <button class="finance-btn disabled-btn" id="withdraw-btn" disabled onclick="processWithdrawal()">Request Withdrawal</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE PAGE -->
+    <div id="page-profile" class="page">
+      <div class="page-content">
+        <h2>My Profile</h2>
+        <div class="profile-header">
+          <div class="avatar-big">👤</div>
+          <h3 id="profile-email">user@example.com</h3>
+          <p>Account Status: <span style="color: #F04444;">Unverified</span></p>
+        </div>
+        <div class="finance-card">
+          <h3>Account Balances</h3>
+          <div style="display: flex; justify-content: space-between; margin-top: 10px;">
+            <div>
+              <p style="color: #9AA8BE; font-size: 12px;">Real Account</p>
+              <div class="big-balance" id="profile-real-balance" style="color: #16A765;">$110.00</div>
+            </div>
+            <div>
+              <p style="color: #9AA8BE; font-size: 12px;">Demo Account</p>
+              <div class="big-balance" id="profile-demo-balance" style="color: #2777E8;">$50,000.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNALS PAGE -->
+    <div id="page-signals" class="page">
+      <div class="page-content">
+        <h2>Trading Signals</h2>
+        <div class="signal-card">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <strong>EUR/USD OTC</strong>
+            <span style="color: #16A765; font-weight: bold;">BUY</span>
+          </div>
+          <p style="font-size: 12px; color: #9AA8BE;">Expires in 00:45</p>
+        </div>
+        <div class="signal-card">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <strong>GBP/JPY OTC</strong>
+            <span style="color: #F04444; font-weight: bold;">SELL</span>
+          </div>
+          <p style="font-size: 12px; color: #9AA8BE;">Expires in 01:20</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SOCIAL PAGE -->
+    <div id="page-social" class="page">
+      <div class="page-content">
+        <h2>Top Traders</h2>
+        <div class="finance-card" style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="avatar-circle">👨</div>
+            <div><strong>AlexTrader</strong><p style="font-size: 11px; color: #9AA8BE;">1,204 trades</p></div>
+          </div>
+          <span style="color: #16A765; font-weight: bold;">+$14,200</span>
+        </div>
+        <div class="finance-card" style="display: flex; justify-content: space-between; align-items: center;">
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div class="avatar-circle">👩</div>
+            <div><strong>MariaFX</strong><p style="font-size: 11px; color: #9AA8BE;">950 trades</p></div>
+          </div>
+          <span style="color: #16A765; font-weight: bold;">+$9,800</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI PAGE -->
+    <div id="page-ai" class="page">
+      <div class="page-content" style="text-align: center;">
+        <h2>AI Auto-Trader</h2>
+        <div class="finance-card" style="margin-top: 20px;">
+          <p style="color: #9AA8BE; margin-bottom: 15px;">Configure the AI to trade for you.</p>
+          <input type="number" placeholder="Number of trades" style="width: 100%; padding: 12px; background: #101525; border: 1px solid #303C55; color: white; border-radius: 8px; margin-bottom: 10px;">
+          <input type="number" placeholder="Starting amount ($)" style="width: 100%; padding: 12px; background: #101525; border: 1px solid #303C55; color: white; border-radius: 8px; margin-bottom: 20px;">
+          <button class="finance-btn" style="background: linear-gradient(90deg, #2777E8, #7B2CBF); font-size: 16px; padding: 15px;">START AI TRADING</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDE MENU -->
+    <div id="side-menu" class="side-menu">
+      <div class="side-menu-header">
+        <div class="avatar-circle">👤</div>
+        <div><strong id="side-menu-email">user@example.com</strong><p style="font-size: 11px; color: #9AA8BE;">Beginner</p></div>
+      </div>
+      <div class="side-menu-item" onclick="openPage('trading')">📈 Trading</div>
+      <div class="side-menu-item" onclick="openPage('finance')">💰 Finance</div>
+      <div class="side-menu-item" onclick="openPage('profile')">👤 Profile</div>
+      <div class="side-menu-item" onclick="openPage('signals')">📡 Signals</div>
+      <div class="side-menu-item" onclick="openPage('social')">👥 Social</div>
+      <div class="side-menu-item" onclick="openPage('ai')">🤖 AI Trader</div>
+      <a href="https://t.me/JAMES_AI_TRADING_BOT" target="_blank" style="text-decoration: none; color: inherit;">
+        <div class="side-menu-item">✈️ Telegram Support</div>
+      </a>
+      <div class="side-menu-item" onclick="location.reload()" style="color: #F04444; margin-top: auto;">🚪 Logout</div>
+    </div>
+    <div id="side-menu-overlay" class="side-menu-overlay" onclick="toggleSideMenu()"></div>
+
+  </div>
+
+  <!-- BOTTOM NAVIGATION -->
+  <div class="bottom-nav" id="bottom-nav">
+    <div class="bottom-nav-item active" id="nav-trading" onclick="openPage('trading')"><span>📈</span><span>Trades</span></div>
+    <div class="bottom-nav-item" id="nav-signals" onclick="openPage('signals')"><span>📡</span><span>Signals</span></div>
+    <div class="bottom-nav-item" id="nav-ai" onclick="openPage('ai')"><span>🤖</span><span>AI Trader</span></div>
+    <div class="bottom-nav-item" id="nav-social" onclick="openPage('social')"><span>👥</span><span>Social</span></div>
+    <div class="bottom-nav-item" id="nav-more" onclick="toggleSideMenu()"><span>☰</span><span>More</span></div>
+  </div>
+
+  <!-- TELEGRAM SUPPORT BUTTON -->
+  <a href="https://t.me/JAMES_AI_TRADING_BOT" target="_blank" class="telegram-support-btn">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.161c-.18 1.897-.962 6.502-1.359 8.627-.168.9-.5 1.201-.82 1.23-.697.064-1.226-.461-1.901-.903-1.056-.692-1.653-1.123-2.678-1.799-1.185-.781-.417-1.21.258-1.911.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.01-1.252-.242-1.865-.442-.75-.243-1.348-.372-1.295-.788.027-.216.327-.437.901-.663 3.531-1.538 5.885-2.552 7.061-3.043 3.361-1.398 4.059-1.641 4.513-1.649.1-.002.323.023.468.14.122.099.156.233.172.333.015.099.034.308.019.478z" fill="white"/></svg>
+  </a>
+
+  <script src="script.js"></script>
+</body>
+</html>
